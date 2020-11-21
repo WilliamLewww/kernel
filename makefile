@@ -1,4 +1,4 @@
-all: boot kernel linker iso
+all: linker iso
 
 boot:
 	i686-elf-as boot.s -o boot.o
@@ -6,7 +6,7 @@ boot:
 kernel:
 	i686-elf-gcc -c kernel.c -o kernel.o -std=gnu99 -ffreestanding -O2 -Wall -Wextra
 
-linker:
+linker: boot kernel
 	i686-elf-gcc -T linker.ld -o myos.bin -ffreestanding -O2 -nostdlib boot.o kernel.o
 
 iso:
