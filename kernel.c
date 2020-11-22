@@ -31,7 +31,40 @@ enum vga_color {
   VGA_COLOR_LIGHT_BROWN = 14,
   VGA_COLOR_WHITE = 15,
 };
- 
-void kernel_main(void) {
 
+uint8_t inb(uint16_t port) {
+  uint8_t ret;
+  asm volatile("inb %1, %0" : "=a"(ret) : "d"(port));
+  return ret;
+}
+
+void sleep(uint32_t count) {
+  while(1) {
+    asm volatile("nop");
+    count--;
+    if (count <= 0) {
+      break;
+    }
+  }
+}
+
+char get_input() {
+  char ch = 0;
+  while ((ch = inb(0x60)) != 0) {
+    if (ch > 0) {
+      return ch;
+    }
+  }
+  return ch;
+}
+
+void kernel_main(void) {
+  char keycode = get_input();
+  
+  uint16_t* terminal_buffer = (uint16_t*) 0xB8000;
+  for (uint32_t y = 0; y < 25; y++) {
+    for (uint32_t x = 0; x < 80; x++) {
+      terminal_buffer[y * 80 + x] = keycode | (uint16_t)VGA_COLOR_LIGHT_CYAN << 8;
+    }
+  }
 }
